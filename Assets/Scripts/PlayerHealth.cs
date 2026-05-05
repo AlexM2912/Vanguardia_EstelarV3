@@ -1,38 +1,66 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class PlayerHealth : MonoBehaviour
 {
-
+    [Header("Vida")]
+    public int maxHealth = 7;
     public int health;
-    public int maxHealth;
 
+    [Header("Renderers")]
     public SpriteRenderer playerSr;
     public SpriteRenderer armSr;
     public SpriteRenderer weaponSr;
-    public Movement movement;
-    // Start is called before the first frame update
+
+    [Header("UI")]
+    public HealthDisplay healthDisplay;
+
+    [Header("Invulnerabilidad")]
+    public float invulnerabilityTime = 0.5f;
+
+    private float invulTimer;
+
+    private PlayerController controller;
+
     void Start()
     {
         health = maxHealth;
+        controller = GetComponent<PlayerController>();
+
+        if (healthDisplay != null)
+            healthDisplay.UpdateHearts(health, maxHealth);
     }
 
-    // Update is called once per frame
     void Update()
     {
-        
+        if (invulTimer > 0f)
+            invulTimer -= Time.deltaTime;
     }
 
     public void TakeDamage(int amount)
     {
+        // Evita daño continuo inmediato
+        if (invulTimer > 0f) return;
+
         health -= amount;
-        if(health <= 0)
+        invulTimer = invulnerabilityTime;
+
+        Debug.Log("Vida actual: " + health);
+
+        // Actualizar UI
+        if (healthDisplay != null)
+            healthDisplay.UpdateHearts(health, maxHealth);
+
+        // Muerte
+        if (health <= 0)
         {
-            playerSr.enabled = false;
-            movement.enabled = false;
-            armSr.enabled = false;
-            weaponSr.enabled = false;
+            health = 0;
+
+            if (playerSr != null) playerSr.enabled = false;
+            if (armSr != null) armSr.enabled = false;
+            if (weaponSr != null) weaponSr.enabled = false;
+
+            if (controller != null)
+                controller.enabled = false;
         }
     }
 }

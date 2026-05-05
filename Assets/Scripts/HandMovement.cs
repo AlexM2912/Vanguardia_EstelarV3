@@ -73,7 +73,7 @@ public class HandMovement : MonoBehaviour
         if (Input.GetMouseButton(0) && canFire)
         {
             canFire = false;
-            Instantiate(bullet, bulletTransform.position, Quaternion.identity);
+            Instantiate(bullet, bulletTransform.position + bulletTransform.right * 0.5f, bulletTransform.rotation);
         }
     }
 }

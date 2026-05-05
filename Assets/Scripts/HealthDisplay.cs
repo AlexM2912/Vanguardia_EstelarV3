@@ -1,34 +1,42 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class HealthDisplay : MonoBehaviour
 {
-    public int health;
-    public int maxHealth;
-
     public Sprite emptyHeart;
     public Sprite fullHeart;
     public Image[] hearts;
 
     public PlayerHealth playerHealth;
-    // Start is called before the first frame update
-    void Start()
+
+    void Awake()
     {
-        
+        // 1) intenta tomarlo del propio objeto
+        if (playerHealth == null)
+            playerHealth = GetComponent<PlayerHealth>();
+
+        // 2) intenta buscar en el Player de la escena
+        if (playerHealth == null)
+        {
+            var player = GameObject.FindWithTag("Player");
+            if (player != null)
+                playerHealth = player.GetComponent<PlayerHealth>();
+        }
+
+        // 3) último recurso
+        if (playerHealth == null)
+            playerHealth = FindObjectOfType<PlayerHealth>();
     }
 
-    // Update is called once per frame
     void Update()
     {
+        if (playerHealth == null) return;
 
-        health = playerHealth.health;
-        maxHealth = playerHealth.maxHealth;
+        int currentHealth = Mathf.Clamp(playerHealth.health, 0, hearts.Length);
 
         for (int i = 0; i < hearts.Length; i++)
         {
-            if(i < health)
+            if (i < currentHealth)
             {
                 hearts[i].sprite = fullHeart;
             }
@@ -36,14 +44,19 @@ public class HealthDisplay : MonoBehaviour
             {
                 hearts[i].sprite = emptyHeart;
             }
-            if (i < maxHealth)
-            {
-                hearts[i].enabled = true;
-            }
+        }
+    }
+
+    public void UpdateHearts(int health, int maxHealth)
+    {
+        for (int i = 0; i < hearts.Length; i++)
+        {
+            if (i < health)
+                hearts[i].sprite = fullHeart;
             else
-            {
-                hearts[i].enabled = false;
-            }
+                hearts[i].sprite = emptyHeart;
+
+            hearts[i].enabled = (i < maxHealth);
         }
     }
 }

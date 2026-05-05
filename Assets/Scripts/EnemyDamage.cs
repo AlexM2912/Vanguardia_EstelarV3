@@ -1,46 +1,58 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class EnemyDamage : MonoBehaviour
 {
-    public int damage;
-    public PlayerHealth playerHealth;
-    public ScoreManagement scoreManagement;
-    public int health;
-    private Animator animator;
+    [Header("Vida")]
+    public int maxHealth = 2;
+    private int health;
 
-    // Start is called before the first frame update
+    [Header("Daño al jugador")]
+    public int damage = 1;
+    public float damageCooldown = 1f;
+
+    private float timer;
+
+    private PlayerHealth playerHealth;
+
     void Start()
     {
-        animator = GetComponent<Animator>();
+        health = maxHealth;
+
+        GameObject player = GameObject.FindWithTag("Player");
+        if (player != null)
+        {
+            playerHealth = player.GetComponent<PlayerHealth>();
+        }
     }
 
-    // Update is called once per frame
-    void Update()
+    public void TakeDamage(int amount)
     {
-        if(health <= 0)
+        health -= amount;
+
+        if (health <= 0)
         {
-            scoreManagement.ChangeScore(10);
             gameObject.SetActive(false);
         }
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
+    void OnCollisionStay2D(Collision2D collision)
     {
-        if (collision.gameObject.CompareTag("Player"))
+        if (!collision.gameObject.CompareTag("Player")) return;
+
+        timer += Time.deltaTime;
+
+        if (timer >= damageCooldown && playerHealth != null)
         {
             playerHealth.TakeDamage(damage);
+            timer = 0f;
         }
     }
 
-    private void OnTriggerEnter2D(Collider2D collision)
+    void OnCollisionExit2D(Collision2D collision)
     {
-        if (collision.gameObject.CompareTag("Bullet"))
+        if (collision.gameObject.CompareTag("Player"))
         {
-            animator.SetTrigger("damaged");
-            health -= 1;
-            Destroy(collision.gameObject);
+            timer = 0f;
         }
     }
 }

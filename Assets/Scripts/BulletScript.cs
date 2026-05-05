@@ -26,4 +26,35 @@ public class BulletScript : MonoBehaviour
     {
         
     }
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        Debug.Log("TOCÓ: " + other.name);
+
+        if (other.CompareTag("Enemy"))
+        {
+            EnemyDamage enemy = other.GetComponent<EnemyDamage>();
+
+            if (enemy != null)
+            {
+                enemy.TakeDamage(1);
+                Destroy(gameObject);
+            }
+        }
+    }
+
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        Debug.Log("COLISION: " + collision.gameObject.name);
+
+        EnemyDamage enemy = collision.gameObject.GetComponent<EnemyDamage>();
+
+        if (enemy == null)
+            enemy = collision.gameObject.GetComponentInParent<EnemyDamage>();
+
+        if (enemy != null)
+        {
+            enemy.TakeDamage(1);
+            Destroy(gameObject);
+        }
+    }
 }
